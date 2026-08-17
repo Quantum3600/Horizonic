@@ -1,4 +1,4 @@
-package com.trishit.horizonic
+package com.trishit.horizonic.presentation.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
