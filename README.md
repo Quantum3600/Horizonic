@@ -36,10 +36,16 @@
 
 Horizonic is a calming motion-sickness relief app for Android that blends subtle visual cues with acoustic support to help your brain better reconcile motion and perception.
 
+---
+
+## 🧠 The Science: Why we get sick
+Motion sickness is often triggered by **vestibular-ocular mismatch**. Your inner ear (vestibular system) senses the acceleration and curves of a vehicle, but your eyes—focused on a static screen or book—tell your brain you are stationary. This sensory conflict causes the brain to trigger a nausea response.
+
+
 ### 🌌 Two-Fold Harmony
 
-- **Visual Motion Cues** — a gyro-stabilized particle overlay powered by Android Accessibility Services.
-- **Vestibular Harmony** — a pure **100Hz bass sine tone** designed to create a steady rhythmic anchor.
+- **Visual Motion Cues** — Horizonic projects a subtle, gyro-stabilized particle overlay across your entire screen using Android's **Accessibility Service**. These particles react in real-time to the vehicle's movement, providing your peripheral vision with the "horizon" it needs to stay anchored, even while you use other apps.
+- **Vestibular Harmony** — The app generates a pure **100Hz bass sine tone**. This specific frequency is designed to stimulate the vestibular system and provide a consistent rhythmic anchor, helping the brain resolve the sensory mismatch more efficiently.
 
 ---
 
