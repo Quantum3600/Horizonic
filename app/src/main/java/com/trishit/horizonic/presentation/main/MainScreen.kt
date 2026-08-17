@@ -1,6 +1,7 @@
 package com.trishit.horizonic.presentation.main
 
 import android.R.attr.fontWeight
+import android.R.attr.text
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -48,6 +49,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trishit.horizonic.R
 import com.trishit.horizonic.utils.openAccessibilitySettings
+import androidx.compose.ui.tooling.preview.Preview
+import com.trishit.horizonic.ui.theme.HorizonicTheme
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -56,12 +59,33 @@ fun MainScreen(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit
 ) {
-    val context = LocalContext.current
     val isActive by viewModel.isSessionActive.collectAsStateWithLifecycle()
     val remainingSeconds by viewModel.remainingSeconds.collectAsStateWithLifecycle()
     val totalDuration by viewModel.playbackDuration.collectAsStateWithLifecycle()
     val showPermissionDialog by viewModel.showPermissionDialog.collectAsStateWithLifecycle()
 
+    MainScreenContent(
+        isActive = isActive,
+        remainingSeconds = remainingSeconds,
+        totalDuration = totalDuration,
+        showPermissionDialog = showPermissionDialog,
+        onNavigateToSettings = onNavigateToSettings,
+        onToggleSession = { viewModel.toggleSession(it) },
+        onDismissPermissionDialog = { viewModel.setPermissionDialogVisible(false) }
+    )
+}
+
+@Composable
+fun MainScreenContent(
+    isActive: Boolean,
+    remainingSeconds: Int,
+    totalDuration: Int,
+    showPermissionDialog: Boolean,
+    onNavigateToSettings: () -> Unit,
+    onToggleSession: (() -> Unit) -> Unit,
+    onDismissPermissionDialog: () -> Unit
+) {
+    val context = LocalContext.current
     val progress = remember(remainingSeconds, totalDuration) {
         if (totalDuration <= 0) 1f 
         else remainingSeconds.toFloat() / totalDuration.toFloat()
@@ -93,13 +117,13 @@ fun MainScreen(
 
     if (showPermissionDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.setPermissionDialogVisible(false) },
+            onDismissRequest = onDismissPermissionDialog,
             title = { Text(stringResource(R.string.accessibility_permission_title)) },
             text = { Text(stringResource(R.string.accessibility_permission_msg)) },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.setPermissionDialogVisible(false)
+                        onDismissPermissionDialog()
                         openAccessibilitySettings(context)
                     }
                 ) {
@@ -107,7 +131,7 @@ fun MainScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.setPermissionDialogVisible(false) }) {
+                TextButton(onClick = onDismissPermissionDialog) {
                     Text(stringResource(R.string.not_now))
                 }
             }
@@ -165,15 +189,13 @@ fun MainScreen(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null 
                     ) {
-                        viewModel.toggleSession(
-                            onHeadsetMissing = {
-                                Toast.makeText(
-                                    context,
-                                    headphonesRequiredMsg,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        )
+                        onToggleSession {
+                            Toast.makeText(
+                                context,
+                                headphonesRequiredMsg,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -181,17 +203,17 @@ fun MainScreen(
                     CircularWavyProgressIndicator(
                         modifier = Modifier.size(320.dp),
                         progress = { 1f - progress },
-                        color = primaryColor.copy(alpha = 0.4f),
-                        amplitude = { 12f },
-                        wavelength = 100.dp
+                        color = primaryColor,
+                        stroke = Stroke(width = 20f),
+                        amplitude = { 8f },
+                        wavelength = 60.dp
                     )
                     
                     Text(
-                        text = if (totalDuration <= 0) "∞" else "$remainingSeconds",
-                        color = onSurfaceColor.copy(alpha = 0.6f),
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.ExtraLight,
-                        letterSpacing = if (totalDuration <= 0) 0.sp else 4.sp
+                        text = if (totalDuration <= 0) "∞" else "${remainingSeconds}s",
+                        color = onSurfaceColor,
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.Bold,
                     )
                 } else {
                     Text(
@@ -256,3 +278,35 @@ fun BackgroundRipples(
 }
 
 // Data models and helper functions can remain below
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    HorizonicTheme {
+        MainScreenContent(
+            isActive = false,
+            remainingSeconds = 60,
+            totalDuration = 60,
+            showPermissionDialog = false,
+            onNavigateToSettings = {},
+            onToggleSession = {},
+            onDismissPermissionDialog = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenActivePreview() {
+    HorizonicTheme {
+        MainScreenContent(
+            isActive = true,
+            remainingSeconds = 45,
+            totalDuration = 60,
+            showPermissionDialog = false,
+            onNavigateToSettings = {},
+            onToggleSession = {},
+            onDismissPermissionDialog = {}
+        )
+    }
+}
