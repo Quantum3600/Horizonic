@@ -51,7 +51,7 @@
     <string name="traveling_prompt">You seem to be traveling. Enable Horizonic?</string>
     <string name="start_session">Start Session</string>
     <string name="monitoring_title">Horizonic Auto-Detect</string>
-    <string name="monitoring_desc">Monitoring for vehicle motion...</string>
+    <string name="monitoring_desc">Monitoring for vehicle motion…</string>
     <string name="motion_monitoring_channel">Motion Monitoring</string>
     <string name="motion_alerts_channel">Motion Alerts</string>
     <string name="motion_monitoring_channel_desc">Runs the sensor to detect when you are in a vehicle</string>
