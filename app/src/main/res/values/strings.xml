@@ -1,3 +1,71 @@
 <resources>
     <string name="app_name">Horizonic</string>
+    <string name="accessibility_service_description">Overlays motion-synchronized particles on top of the screen using the gyroscope, acting as a physical visual stabilizer to alleviate sensory-conflict mismatch.</string>
+
+    <!-- Main Screen -->
+    <string name="begin">begin</string>
+    <string name="settings_content_description">Settings</string>
+    <string name="horizonic_title">Horizonic</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="back">Back</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme">Theme</string>
+    <string name="playback">Playback</string>
+    <string name="duration_seconds">Duration (seconds)</string>
+    <string name="check_for_headphones">Check for headphones</string>
+    <string name="connected">Connected</string>
+    <string name="required">Required</string>
+    <string name="status_notification">Status Notification</string>
+    <string name="motion_and_service">Motion &amp; Service</string>
+    <string name="auto_detect_motion">Auto-Detect Motion</string>
+    <string name="auto_detect_desc">Start session on vehicular motion</string>
+    <string name="accessibility_service">Accessibility Service</string>
+    <string name="running">Running</string>
+    <string name="stopped">Stopped</string>
+    <string name="setup">Setup</string>
+    <string name="battery_optimization_settings">Battery Optimization Settings</string>
+    <string name="visual_motion_cues">Visual Motion Cues</string>
+    <string name="visual_motion_cues_desc">Projects flowing particles over the phone\'s screen that react continuously to vehicle movement. Standard overlays help eliminate \'sensory-conflict mismatch\' when reading or using other apps.</string>
+    <string name="setup_required">Setup Required</string>
+    <string name="enable_overlay_to_see">Enable accessibility overlay to see particles outside this app.</string>
+    <string name="how_to_enable_overlay">How to enable overlay:</string>
+    <string name="step_1">1. Click the \'Enable Overlay\' button below.</string>
+    <string name="step_2">2. Locate \'Horizonic\' in your Accessibility menu.</string>
+    <string name="step_3">3. Turn the switch ON.</string>
+    <string name="enable_overlay">Enable Overlay</string>
+    <string name="motion_sensitivity">Motion Sensitivity</string>
+    <string name="dot_size">Dot Size</string>
+    <string name="dots_per_side">Dots per side</string>
+    <string name="color_theme">Color Theme</string>
+    <string name="background">Background</string>
+    <string name="background_desc">Horizonic helps reduce motion sickness using a clear 100 Hz bass sine tone that stimulates your balance system. Put on your headphones and enjoy a more relaxed journey.</string>
+    <string name="vestibular_harmony">Vestibular Harmony</string>
+    <string name="vestibular_harmony_desc">Motion sickness is triggered by \'vestibular-ocular mismatch\' — your inner ear senses speed while your eyes index static texts. Under-display physics particles map vehicular forces in real-time, correcting your eye\'s visual drift. Paired with a calming 100Hz frequency cycle, the brain resolves conflict swiftly.</string>
+    <string name="playback_duration_picker_title">Playback duration (seconds)</string>
+    <string name="ok">OK</string>
+
+    <!-- Services & Notifications -->
+    <string name="motion_detected">Motion Detected</string>
+    <string name="traveling_prompt">You seem to be traveling. Enable Horizonic?</string>
+    <string name="start_session">Start Session</string>
+    <string name="monitoring_title">Horizonic Auto-Detect</string>
+    <string name="monitoring_desc">Monitoring for vehicle motion...</string>
+    <string name="motion_monitoring_channel">Motion Monitoring</string>
+    <string name="motion_alerts_channel">Motion Alerts</string>
+    <string name="motion_monitoring_channel_desc">Runs the sensor to detect when you are in a vehicle</string>
+    <string name="motion_alerts_channel_desc">Alerts you to start a session when motion is detected</string>
+
+    <!-- Quick Settings Tile -->
+    <string name="setup_overlay">Setup overlay</string>
+    <string name="session_active">Session Active</string>
+    <string name="paused">Paused</string>
+
+    <!-- Widget -->
+    <string name="ready_100hz">Ready (100Hz)</string>
+    <string name="active_format">Active (%s)</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="horizonic_widget_label">Horizonic Widget</string>
 </resources>

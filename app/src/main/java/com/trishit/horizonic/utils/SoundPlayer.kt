@@ -3,8 +3,6 @@ package com.trishit.horizonic.utils
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import com.trishit.horizonic.utils.SoundPlayer.playingState
-import com.trishit.horizonic.utils.SoundPlayer.remainingSeconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.sin
 import kotlin.time.Duration.Companion.milliseconds
 
 object SoundPlayer {
@@ -25,7 +24,7 @@ object SoundPlayer {
     val currentFrequency = MutableStateFlow(100f)
     val currentDurationSeconds = MutableStateFlow(60)
 
-    val onStateChanged: (() -> Unit)? = null
+    var onStateChanged: (() -> Unit)? = null
 
     private fun notifyStateChanged() {
         onStateChanged?.invoke()
@@ -88,7 +87,7 @@ object SoundPlayer {
                     val phaseIncrement = 2 * Math.PI * freq / sampleRate
 
                     for (i in 0 until bufferSize) {
-                        buffer[i] = (Math.sin(phase) * 32767).toInt().toShort()
+                        buffer[i] = (sin(phase) * 32767).toInt().toShort()
                         phase += phaseIncrement
                         if (phase > 2 * Math.PI) {
                             phase -= 2 * Math.PI

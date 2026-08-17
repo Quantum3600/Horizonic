@@ -2,12 +2,15 @@ package com.trishit.horizonic.utils
 
 import android.content.Context
 import android.provider.Settings
+import androidx.glance.appwidget.updateAll
+import com.trishit.horizonic.service.MotionSicknessService
+import com.trishit.horizonic.widget.SoundReliefWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.jvm.java
 
-fun checkAccessibilityServiceEnabled(context: Context): Boolean {
+fun checkIsAccessibilityServiceEnabled(context: Context): Boolean {
     return try {
         val expectedId = "${context.packageName}/${MotionSicknessService::class.java.name}"
         val enabledServices = Settings.Secure.getString(
