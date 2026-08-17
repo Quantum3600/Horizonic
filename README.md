@@ -1,70 +1,99 @@
-# 🌊 Horizonic
+<p align="center">
+    <img src="https://github.com/Quantum3600/Horizonic/raw/master/app/src/main/ic_launcher-playstore.png" width="140" height="140" />
+</p>
 
-**Find your equilibrium in a moving world.**
+<h1 align="center">🌊 Horizonic</h1>
 
-Horizonic is a modern Android application designed to alleviate motion sickness (kinetosis) through synchronized sensory feedback. By bridging the gap between what your eyes see and what your inner ear feels, Horizonic helps you reclaim your journey—whether you're reading on a train, working in a car, or browsing on a bus.
+<p align="center">
+  <b>Find your equilibrium in a moving world.</b><br/>
+  A modern Android app designed to help ease motion sickness through synchronized sensory feedback.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
+  <img src="https://img.shields.io/badge/Jetpack%20Compose-Modern%20UI-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose" />
+  <img src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
+  <img src="https://img.shields.io/badge/Accessibility%20Service-System%20Overlay-FF9800?style=for-the-badge" alt="Accessibility Service" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/Quantum3600/Horizonic?style=flat-square" alt="GitHub stars" />
+  <img src="https://img.shields.io/github/forks/Quantum3600/Horizonic?style=flat-square" alt="GitHub forks" />
+  <img src="https://img.shields.io/github/issues/Quantum3600/Horizonic?style=flat-square" alt="GitHub issues" />
+  <img src="https://img.shields.io/github/license/Quantum3600/Horizonic?style=flat-square" alt="License" />
+</p>
+
+---
+
+## ✨ What is Horizonic?
+
+Horizonic is a calming motion-sickness relief app for Android that blends subtle visual cues with acoustic support to help your brain better reconcile motion and perception.
 
 ---
 
 ## 🧠 The Science: Why we get sick
 Motion sickness is often triggered by **vestibular-ocular mismatch**. Your inner ear (vestibular system) senses the acceleration and curves of a vehicle, but your eyes—focused on a static screen or book—tell your brain you are stationary. This sensory conflict causes the brain to trigger a nausea response.
 
-## ⚖️ The Solution: Two-Fold Harmony
 
-### 1. Visual Motion Cues (Physical Stabilizers)
-Horizonic projects a subtle, gyro-stabilized particle overlay across your entire screen using Android's **Accessibility Service**. These particles react in real-time to the vehicle's movement, providing your peripheral vision with the "horizon" it needs to stay anchored, even while you use other apps.
+### 🌌 Two-Fold Harmony
 
-### 2. Vestibular Harmony (Acoustic Relief)
-The app generates a pure **100Hz bass sine tone**. This specific frequency is designed to stimulate the vestibular system and provide a consistent rhythmic anchor, helping the brain resolve the sensory mismatch more efficiently.
+- **Visual Motion Cues** — Horizonic projects a subtle, gyro-stabilized particle overlay across your entire screen using Android's **Accessibility Service**. These particles react in real-time to the vehicle's movement, providing your peripheral vision with the "horizon" it needs to stay anchored, even while you use other apps.
+- **Vestibular Harmony** — The app generates a pure **100Hz bass sine tone**. This specific frequency is designed to stimulate the vestibular system and provide a consistent rhythmic anchor, helping the brain resolve the sensory mismatch more efficiently.
 
 ---
 
-## ✨ Key Features
+## 🎯 Key Features
 
-- **Zen-Inspired UI**: A minimalist, calming interface built with Jetpack Compose, featuring dynamic "Zen Orbs" and ripple animations.
-- **Intelligent Auto-Detection**: Uses the device's linear accelerometer to detect vehicular motion and proactively suggest starting a relief session.
-- **System-Wide Overlay**: Particles stay visible over any app, ensuring continuous relief while you work or play.
-- **Quick Access**: Control your sessions via Home Screen Widgets or the Quick Settings Tile.
-- **Deep Customization**: Adjust particle sensitivity, density, and color themes to suit your comfort level.
+- **Zen-Inspired UI** with Jetpack Compose and soothing animations
+- **Intelligent Auto-Detection** using device motion sensors
+- **System-Wide Overlay** that stays visible across apps
+- **Quick Access** through widgets and quick settings
+- **Deep Customization** for sensitivity, density, and theme
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **UI**: 100% [Jetpack Compose](https://developer.android.com/jetpack/compose) for a modern, declarative interface.
-- **Language**: [Kotlin](https://kotlinlang.org/) with Coroutines and Flow for reactive state management.
-- **Services**: 
-    - **Accessibility Service** for system-wide visual overlays.
-    - **Foreground Services** for continuous motion detection and audio playback.
-- **Sensors**: High-frequency Gyroscope and Accelerometer integration for low-latency feedback.
-- **Architecture**: Clean architecture principles with a focus on modularity and testability.
+- **UI:** Jetpack Compose
+- **Language:** Kotlin
+- **State:** Coroutines + Flow
+- **Services:** Accessibility Service, Foreground Services
+- **Sensors:** Gyroscope + Accelerometer
+- **Architecture:** Clean architecture principles
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Android device running **Android 8.0 (Oreo)** or higher.
-- Headphones (Required for the 100Hz Vestibular Harmony feature).
+
+- Android device running **Android 8.0 (Oreo)** or higher
+- Headphones recommended for the best experience
 
 ### Installation
+
 1. Clone the repository:
    ```bash
-   git clone https://github.com/trishit/horizonic.git
+   git clone https://github.com/Quantum3600/Horizonic.git
    ```
-2. Open the project in **Android Studio (Ladybug or newer)**.
+2. Open the project in **Android Studio**.
 3. Build and run the `:app` module on your device.
 
 ### Permissions
-To provide system-wide relief, Horizonic requires:
-- **Accessibility Service**: To draw the stabilizing particles over other apps.
-- **Post Notifications**: For session control and auto-detection alerts.
+
+Horizonic may require:
+
+- **Accessibility Service** — to render the stabilizing overlay
+- **Post Notifications** — for session control and alerts
 
 ---
 
 ## 🎨 Design Philosophy
-Horizonic isn't just a tool; it's an experience. The UI is designed to be "invisible"—lowering cognitive load and providing a sense of calm through soft gradients, light typography, and organic motion.
+
+Horizonic is designed to feel quiet, soft, and effortless — reducing cognitive load with clean spacing, gentle gradients, and an interface that stays out of your way.
 
 ---
 
-*Made with 💙 for everyone who loves the journey but hates the ride.*
+<p align="center">
+  <b>Made with 💙 for everyone who loves the journey but hates the ride.</b>
+</p>
