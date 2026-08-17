@@ -79,6 +79,9 @@ import com.trishit.horizonic.R
 import com.trishit.horizonic.ThemeMode
 import com.trishit.horizonic.presentation.components.WheelPicker
 import com.trishit.horizonic.presentation.main.MainViewModel
+import com.trishit.horizonic.utils.checkOverlayPermission
+import com.trishit.horizonic.utils.openAccessibilitySettings
+import com.trishit.horizonic.utils.openOverlaySettings
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 
@@ -98,7 +101,8 @@ fun SettingsScreen(
     val gyroSensitivity by viewModel.gyroSensitivity.collectAsStateWithLifecycle()
     val particleColorTheme by viewModel.particleColorTheme.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-    var isNotificationEnabled by remember { mutableStateOf(true) }
+    val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted.collectAsStateWithLifecycle()
+    val isStatusNotificationEnabled by viewModel.isStatusNotificationEnabled.collectAsStateWithLifecycle()
 
     var showDurationSheet by remember { mutableStateOf(false) }
     val sheetState = rememberBottomSheetState(SheetValue.Hidden)
@@ -110,6 +114,7 @@ fun SettingsScreen(
     // Check headphone status periodically when on this screen
     LaunchedEffect(Unit) {
         viewModel.checkHeadphoneConnection(context)
+        viewModel.updatePermissionStatus(context)
     }
     if (showDurationSheet) {
         ModalBottomSheet(
@@ -312,8 +317,8 @@ fun SettingsScreen(
                     },
                     trailingContent = {
                         Switch(
-                            checked = isNotificationEnabled,
-                            onCheckedChange = { isNotificationEnabled = it },
+                            checked = isStatusNotificationEnabled,
+                            onCheckedChange = { viewModel.setStatusNotificationEnabled(it) },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                                 checkedTrackColor = MaterialTheme.colorScheme.primary
@@ -326,7 +331,7 @@ fun SettingsScreen(
             // 2. Motion & Permissions Group
             SettingsGroup(title = stringResource(R.string.motion_and_service)) {
                 SegmentedListItem(
-                    shapes = ListItemDefaults.segmentedShapes(0, 3),
+                    shapes = ListItemDefaults.segmentedShapes(0, 4),
                     colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                     content = {
                         Column {
@@ -351,7 +356,7 @@ fun SettingsScreen(
                 )
 
                 SegmentedListItem(
-                    shapes = ListItemDefaults.segmentedShapes(1, 3),
+                    shapes = ListItemDefaults.segmentedShapes(1, 4),
                     colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                     content = {
                         Column {
@@ -365,12 +370,7 @@ fun SettingsScreen(
                     },
                     trailingContent = {
                         Button(
-                            onClick = {
-                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                }
-                                context.startActivity(intent)
-                            },
+                            onClick = { openAccessibilitySettings(context) },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -384,7 +384,35 @@ fun SettingsScreen(
                 )
 
                 SegmentedListItem(
-                    shapes = ListItemDefaults.segmentedShapes(2, 3),
+                    shapes = ListItemDefaults.segmentedShapes(2, 4),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Text(stringResource(R.string.display_over_apps))
+                            Text(
+                                text = if (isOverlayPermissionGranted) stringResource(R.string.granted) else stringResource(R.string.not_granted),
+                                color = if (isOverlayPermissionGranted) Color(0xFF00FFCC) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        Button(
+                            onClick = { openOverlaySettings(context) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(stringResource(R.string.setup), fontSize = 12.sp)
+                        }
+                    }
+                )
+
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(3, 4),
                     colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                     content = {
                         Text(stringResource(R.string.battery_optimization_settings))
@@ -473,12 +501,7 @@ fun SettingsScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Button(
-                                    onClick = {
-                                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                        }
-                                        context.startActivity(intent)
-                                    },
+                                    onClick = { openAccessibilitySettings(context) },
                                     modifier = Modifier.fillMaxWidth().height(48.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.primary,

@@ -25,6 +25,7 @@ class DataStoreManager(private val context: Context) {
         val IS_AUTO_DETECT_ENABLED = booleanPreferencesKey("is_auto_detect_enabled")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val PLAYBACK_DURATION = intPreferencesKey("playback_duration")
+        val IS_STATUS_NOTIFICATION_ENABLED = booleanPreferencesKey("is_status_notification_enabled")
     }
 
     val gyroSensitivity: Flow<Float> = context.dataStore.data.map { it[GYRO_SENSITIVITY] ?: 2.5f }
@@ -36,6 +37,7 @@ class DataStoreManager(private val context: Context) {
         ThemeMode.valueOf(it[THEME_MODE] ?: ThemeMode.SYSTEM.name)
     }
     val playbackDuration: Flow<Int> = context.dataStore.data.map { it[PLAYBACK_DURATION] ?: 60 }
+    val isStatusNotificationEnabled: Flow<Boolean> = context.dataStore.data.map { it[IS_STATUS_NOTIFICATION_ENABLED] ?: true }
 
     suspend fun saveGyroSensitivity(value: Float) {
         context.dataStore.edit { it[GYRO_SENSITIVITY] = value }
@@ -63,5 +65,9 @@ class DataStoreManager(private val context: Context) {
 
     suspend fun savePlaybackDuration(value: Int) {
         context.dataStore.edit { it[PLAYBACK_DURATION] = value }
+    }
+
+    suspend fun saveStatusNotificationEnabled(value: Boolean) {
+        context.dataStore.edit { it[IS_STATUS_NOTIFICATION_ENABLED] = value }
     }
 }

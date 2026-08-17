@@ -54,6 +54,10 @@ class ParticleOverlay @JvmOverloads constructor(
         }
     }
 
+    enum class ParticleState {
+        ACTIVE, FADING_OUT, FADING_IN
+    }
+
     class Particle(
         val homeX: Float,
         val homeY: Float,
@@ -65,7 +69,8 @@ class ParticleOverlay @JvmOverloads constructor(
         val color: Int,
         var alpha: Float, // 0.0 to 1.0
         var alphaOffset: Float,
-        var isExtra: Boolean = false
+        var isExtra: Boolean = false,
+        var state: ParticleState = ParticleState.ACTIVE
     )
 
     init {
@@ -151,15 +156,20 @@ class ParticleOverlay @JvmOverloads constructor(
         synchronized(particles) {
             particles.clear()
             val scale = resources.displayMetrics.density
-            val margin = 20f * scale
-            val sideMargin = 12f * scale
+            val margin = 40f * scale // More margin for top/bottom
+            val sideMargin = 16f * scale
+            val staggeredOffset = 12f * scale // Zigzag depth
             val availableHeight = height - 2 * margin
             val spacing = availableHeight / (cachedBaseCount + 1)
 
             for (side in 0..1) { // 0 = Left, 1 = Right
-                val homeX = if (side == 0) sideMargin else width - sideMargin
+                val baseHomeX = if (side == 0) sideMargin else width - sideMargin
                 for (i in 1..cachedBaseCount) {
                     val homeY = margin + i * spacing
+                    // Zigzag pattern: offset every other dot
+                    val xOffset = if (i % 2 == 0) staggeredOffset else -staggeredOffset
+                    val homeX = if (side == 0) baseHomeX + xOffset else baseHomeX - xOffset
+                    
                     val r = cachedParticleSize * scale
                     val color = activeColors[random.nextInt(activeColors.size)]
                     
@@ -174,7 +184,8 @@ class ParticleOverlay @JvmOverloads constructor(
                             radius = r,
                             color = color,
                             alpha = 0.8f,
-                            alphaOffset = random.nextFloat() * 10f
+                            alphaOffset = random.nextFloat() * 10f,
+                            state = ParticleState.ACTIVE
                         )
                     )
                 }
@@ -188,34 +199,37 @@ class ParticleOverlay @JvmOverloads constructor(
         synchronized(particles) {
             if (particles.isEmpty()) return
 
-            gyroX = gyroX * 0.9f + targetGyroX * 0.1f
-            gyroY = gyroY * 0.9f + targetGyroY * 0.1f
-            gyroZ = gyroZ * 0.9f + targetGyroZ * 0.1f
+            // Smoother gyro smoothing
+            gyroX = gyroX * 0.92f + targetGyroX * 0.08f
+            gyroY = gyroY * 0.92f + targetGyroY * 0.08f
+            gyroZ = gyroZ * 0.92f + targetGyroZ * 0.08f
 
             val motionMagnitude = sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ)
-            val threshold = 0.05f
+            val threshold = 0.02f
             val isMoving = motionMagnitude > threshold
 
             val scale = resources.displayMetrics.density
-            val maxScatter = 40f * scale * cachedSensitivity
-            val friction = 0.95f
-            val returnSpeed = 0.05f
+            val maxScatter = 45f * scale * cachedSensitivity
+            val friction = 0.92f // Increased friction for more control
+            val returnSpeed = 0.04f
+            val fadeSpeed = 0.15f
 
             // Dynamic count logic: show extra particles if motion is high
-            val extraCountTarget = if (motionMagnitude > 1.5f) 2 else if (motionMagnitude > 0.8f) 1 else 0
+            val extraCountTarget = if (motionMagnitude > 1.2f) 3 else if (motionMagnitude > 0.6f) 1 else 0
             val currentExtras = particles.count { it.isExtra }
             
             if (currentExtras < extraCountTarget) {
-                // Add an extra particle
                 val side = random.nextInt(2)
-                val homeX = if (side == 0) 12f * scale else width - 12f * scale
+                val baseHomeX = if (side == 0) 16f * scale else width - 16f * scale
+                val xOffset = (random.nextFloat() - 0.5f) * 20f * scale
                 val homeY = random.nextFloat() * height
                 particles.add(
                     Particle(
-                        homeX = homeX, homeY = homeY, x = homeX, y = homeY,
+                        homeX = baseHomeX + xOffset, homeY = homeY, x = baseHomeX + xOffset, y = homeY,
                         vx = 0f, vy = 0f, radius = cachedParticleSize * scale * 0.8f,
                         color = activeColors[random.nextInt(activeColors.size)],
-                        alpha = 0f, alphaOffset = random.nextFloat() * 10f, isExtra = true
+                        alpha = 0f, alphaOffset = random.nextFloat() * 10f, isExtra = true,
+                        state = ParticleState.FADING_IN
                     )
                 )
             }
@@ -225,12 +239,12 @@ class ParticleOverlay @JvmOverloads constructor(
                 val p = iterator.next()
                 
                 if (isMoving) {
-                    // Motion: Scatter and Twinkle
-                    val forceX = -gyroY * cachedSensitivity * 2.0f * scale
-                    val forceY = gyroX * cachedSensitivity * 2.0f * scale
+                    // Motion logic
+                    val forceX = -gyroY * cachedSensitivity * 1.5f * scale // Reduced multiplier
+                    val forceY = gyroX * cachedSensitivity * 1.5f * scale
                     
-                    p.vx += forceX + (random.nextFloat() - 0.5f) * 0.2f * scale
-                    p.vy += forceY + (random.nextFloat() - 0.5f) * 0.2f * scale
+                    p.vx += forceX + (random.nextFloat() - 0.5f) * 0.1f * scale
+                    p.vy += forceY + (random.nextFloat() - 0.5f) * 0.1f * scale
                     
                     p.vx *= friction
                     p.vy *= friction
@@ -238,20 +252,42 @@ class ParticleOverlay @JvmOverloads constructor(
                     p.x += p.vx
                     p.y += p.vy
                     
-                    // Keep within scatter range of home
                     val dx = p.x - p.homeX
                     val dy = p.y - p.homeY
                     val dist = sqrt(dx * dx + dy * dy)
-                    if (dist > maxScatter) {
-                        p.x = p.homeX + (dx / dist) * maxScatter
-                        p.y = p.homeY + (dy / dist) * maxScatter
+
+                    // Recycling Logic
+                    if (dist > maxScatter && p.state == ParticleState.ACTIVE) {
+                        p.state = ParticleState.FADING_OUT
                     }
 
-                    // Twinkle: Oscillate alpha
-                    val targetAlpha = 0.3f + 0.6f * (0.5f + 0.5f * sin((frameTime + p.alphaOffset).toDouble()).toFloat())
-                    p.alpha = p.alpha * 0.9f + targetAlpha * 0.1f
+                    when (p.state) {
+                        ParticleState.FADING_OUT -> {
+                            p.alpha -= fadeSpeed
+                            if (p.alpha <= 0f) {
+                                p.alpha = 0f
+                                // Respawn at home
+                                p.x = p.homeX
+                                p.y = p.homeY
+                                p.vx = 0f
+                                p.vy = 0f
+                                p.state = ParticleState.FADING_IN
+                            }
+                        }
+                        ParticleState.FADING_IN -> {
+                            p.alpha += fadeSpeed
+                            if (p.alpha >= 0.8f) {
+                                p.alpha = 0.8f
+                                p.state = ParticleState.ACTIVE
+                            }
+                        }
+                        ParticleState.ACTIVE -> {
+                            val targetAlpha = 0.4f + 0.5f * (0.5f + 0.5f * sin((frameTime + p.alphaOffset).toDouble()).toFloat())
+                            p.alpha = p.alpha * 0.8f + targetAlpha * 0.2f
+                        }
+                    }
                 } else {
-                    // Stationary: Return to home and stabilize alpha
+                    // Return home logic
                     p.vx = 0f
                     p.vy = 0f
                     p.x = p.x * (1 - returnSpeed) + p.homeX * returnSpeed
@@ -260,10 +296,15 @@ class ParticleOverlay @JvmOverloads constructor(
                     val targetAlpha = if (p.isExtra) 0f else 0.8f
                     p.alpha = p.alpha * 0.9f + targetAlpha * 0.1f
                     
-                    // Remove extra particles if they've faded out
-                    if (p.isExtra && p.alpha < 0.05f) {
-                        iterator.remove()
-                        continue
+                    if (p.alpha < 0.1f) {
+                        if (p.isExtra) {
+                            iterator.remove()
+                            continue
+                        } else {
+                            p.state = ParticleState.ACTIVE // Reset state for base particles
+                        }
+                    } else if (p.alpha > 0.7f && !p.isExtra) {
+                        p.state = ParticleState.ACTIVE
                     }
                 }
             }

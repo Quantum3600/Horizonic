@@ -51,7 +51,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.trishit.horizonic.R
-import com.trishit.horizonic.utils.openAccessibilitySettings
+import com.trishit.horizonic.utils.checkOverlayPermission
 import androidx.compose.ui.tooling.preview.Preview
 import com.trishit.horizonic.ui.theme.HorizonicTheme
 import kotlin.math.abs
@@ -62,10 +62,15 @@ fun MainScreen(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit
 ) {
+    val context = LocalContext.current
     val isActive by viewModel.isSessionActive.collectAsStateWithLifecycle()
     val remainingSeconds by viewModel.remainingSeconds.collectAsStateWithLifecycle()
     val totalDuration by viewModel.playbackDuration.collectAsStateWithLifecycle()
     val showPermissionDialog by viewModel.showPermissionDialog.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.updatePermissionStatus(context)
+    }
 
     MainScreenContent(
         isActive = isActive,
@@ -128,10 +133,7 @@ fun MainScreenContent(
             text = { Text(stringResource(R.string.accessibility_permission_msg)) },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        onDismissPermissionDialog()
-                        openAccessibilitySettings(context)
-                    }
+                    onClick = onNavigateToSettings
                 ) {
                     Text(stringResource(R.string.setup))
                 }

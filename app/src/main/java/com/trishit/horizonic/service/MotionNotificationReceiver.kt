@@ -12,21 +12,28 @@ class MotionNotificationReceiver : BroadcastReceiver() {
 
     companion object {
         const val ACTION_ENABLE_SESSION = "com.trishit.horizonic.ACTION_ENABLE_SESSION"
+        const val ACTION_STOP_SESSION = "com.trishit.horizonic.ACTION_STOP_SESSION"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == ACTION_ENABLE_SESSION) {
+        when (intent.action) {
+            ACTION_ENABLE_SESSION -> {
+                MotionState.isOverlayActive.value = true
+                SoundPlayer.startPlaying()
+                updateSoundGlanceWidgets(context)
 
-            // 1. Start the Session
-            MotionState.isOverlayActive.value = true
-            SoundPlayer.startPlaying()
+                val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.cancel(MotionDetectionService.ALERT_ID)
+            }
 
-            // 2. Update Widgets & Tiles
-            updateSoundGlanceWidgets(context)
+            ACTION_STOP_SESSION -> {
+                MotionState.isOverlayActive.value = false
+                SoundPlayer.stopPlaying()
+                updateSoundGlanceWidgets(context)
 
-            // 3. Dismiss the Alert Notification
-            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.cancel(MotionDetectionService.ALERT_ID)
+                val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.cancel(MotionSicknessService.ACTIVE_SESSION_NOTIFICATION_ID)
+            }
         }
     }
 }

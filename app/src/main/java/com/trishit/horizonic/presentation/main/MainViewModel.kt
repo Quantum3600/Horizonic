@@ -11,6 +11,7 @@ import com.trishit.horizonic.MotionState
 import com.trishit.horizonic.data.repository.DataStoreManager
 import com.trishit.horizonic.service.MotionDetectionService
 import com.trishit.horizonic.utils.SoundPlayer
+import com.trishit.horizonic.utils.checkOverlayPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -38,9 +39,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val gyroSensitivity = MotionState.gyroSensitivity
     val particleColorTheme = MotionState.particleColorTheme
     val themeMode = MotionState.themeMode
+    val isStatusNotificationEnabled = MotionState.isStatusNotificationEnabled
 
     private val _isHeadsetConnected = MutableStateFlow(false)
     val isHeadsetConnected: StateFlow<Boolean> = _isHeadsetConnected
+
+    private val _isOverlayPermissionGranted = MutableStateFlow(true)
+    val isOverlayPermissionGranted: StateFlow<Boolean> = _isOverlayPermissionGranted
 
     private val _showPermissionDialog = MutableStateFlow(false)
     val showPermissionDialog: StateFlow<Boolean> = _showPermissionDialog
@@ -67,6 +72,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             dataStoreManager.playbackDuration.collectLatest { SoundPlayer.currentDurationSeconds.value = it }
         }
+        viewModelScope.launch {
+            dataStoreManager.isStatusNotificationEnabled.collectLatest { MotionState.isStatusNotificationEnabled.value = it }
+        }
     }
 
     fun toggleSession(onHeadsetMissing: () -> Unit = {}) {
@@ -92,8 +100,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _showPermissionDialog.value = visible
     }
 
+    fun updatePermissionStatus(context: Context) {
+        _isOverlayPermissionGranted.value = checkOverlayPermission(context)
+    }
+
     fun setThemeMode(mode: com.trishit.horizonic.ThemeMode) {
         viewModelScope.launch { dataStoreManager.saveThemeMode(mode) }
+    }
+
+    fun setStatusNotificationEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreManager.saveStatusNotificationEnabled(enabled) }
     }
 
     fun setDuration(seconds: Int) {

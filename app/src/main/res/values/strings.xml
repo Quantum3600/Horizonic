@@ -22,6 +22,9 @@
     <string name="auto_detect_motion">Auto-Detect Motion</string>
     <string name="auto_detect_desc">Start session on vehicular motion</string>
     <string name="accessibility_service">Accessibility Service</string>
+    <string name="display_over_apps">Display over other apps</string>
+    <string name="granted">Granted</string>
+    <string name="not_granted">Not Granted</string>
     <string name="running">Running</string>
     <string name="stopped">Stopped</string>
     <string name="setup">Setup</string>
@@ -60,8 +63,13 @@
     <string name="motion_alerts_channel">Motion Alerts</string>
     <string name="motion_monitoring_channel_desc">Runs the sensor to detect when you are in a vehicle</string>
     <string name="motion_alerts_channel_desc">Alerts you to start a session when motion is detected</string>
+    <string name="active_session_channel_name">Active Session</string>
+    <string name="active_session_channel_desc">Shows session controls while Horizonic is running</string>
+    <string name="active_session_title">Horizonic is Active</string>
+    <string name="active_session_desc">Session is running. Tap Stop to end.</string>
 
     <!-- Quick Settings Tile -->
+    <string name="tile_label">Start Horizonic</string>
     <string name="setup_overlay">Setup overlay</string>
     <string name="session_active">Session Active</string>
     <string name="paused">Paused</string>

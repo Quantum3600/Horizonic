@@ -81,14 +81,14 @@ class MotionReliefTileService : TileService() {
 
         if (!isServiceRunning) {
             tile.state = Tile.STATE_INACTIVE
-            tile.label = getString(R.string.app_name)
+            tile.label = getString(R.string.tile_label)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tile.subtitle = getString(R.string.setup_overlay)
             }
         } else {
             val isActive = MotionState.isOverlayActive.value
             tile.state = if (isActive) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-            tile.label = getString(R.string.app_name)
+            tile.label = getString(R.string.tile_label)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tile.subtitle = if (isActive) getString(R.string.session_active) else getString(R.string.paused)
             }
