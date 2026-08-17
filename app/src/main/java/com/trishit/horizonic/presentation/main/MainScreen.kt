@@ -1,5 +1,6 @@
 package com.trishit.horizonic.presentation.main
 
+import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -26,11 +27,13 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -47,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trishit.horizonic.R
+import com.trishit.horizonic.utils.openAccessibilitySettings
 import kotlin.random.Random
 
 @Composable
@@ -54,9 +59,11 @@ fun MainScreen(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit
 ) {
+    val context = LocalContext.current
     val isActive by viewModel.isSessionActive.collectAsStateWithLifecycle()
     val remainingSeconds by viewModel.remainingSeconds.collectAsStateWithLifecycle()
     val totalDuration by viewModel.playbackDuration.collectAsStateWithLifecycle()
+    val showPermissionDialog by viewModel.showPermissionDialog.collectAsStateWithLifecycle()
 
     val progress = remember(remainingSeconds, totalDuration) {
         if (totalDuration <= 0) 1f 
@@ -66,6 +73,7 @@ fun MainScreen(
     val primaryColor = MaterialTheme.colorScheme.primary
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
+    val headphonesRequiredMsg = stringResource(R.string.headphones_required_toast)
 
     // Generate random orb configurations when the session starts
     val orbConfigs = remember(isActive, primaryColor) {
@@ -79,6 +87,29 @@ fun MainScreen(
                 )
             }
         } else emptyList()
+    }
+
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.setPermissionDialogVisible(false) },
+            title = { Text(stringResource(R.string.accessibility_permission_title)) },
+            text = { Text(stringResource(R.string.accessibility_permission_msg)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.setPermissionDialogVisible(false)
+                        openAccessibilitySettings(context)
+                    }
+                ) {
+                    Text(stringResource(R.string.setup))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.setPermissionDialogVisible(false) }) {
+                    Text(stringResource(R.string.not_now))
+                }
+            }
+        )
     }
 
     BoxWithConstraints(
@@ -155,7 +186,15 @@ fun MainScreen(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null 
                     ) {
-                        viewModel.toggleSession()
+                        viewModel.toggleSession(
+                            onHeadsetMissing = {
+                                Toast.makeText(
+                                    context,
+                                    headphonesRequiredMsg,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
                     },
                 contentAlignment = Alignment.Center
             ) {

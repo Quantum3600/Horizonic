@@ -1,6 +1,10 @@
 package com.trishit.horizonic.presentation.main
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -9,10 +13,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -20,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.trishit.horizonic.MotionState
@@ -39,6 +44,17 @@ sealed interface Route {
 }
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModels()
+
+    private val headsetReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                val state = intent.getIntExtra("state", 0)
+                viewModel.setHeadsetConnected(state > 0)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -46,11 +62,21 @@ class MainActivity : ComponentActivity() {
             updateSoundGlanceWidgets(applicationContext)
         }
 
+        // Initial check
+        viewModel.checkHeadphoneConnection(this)
+
         setContent {
-            val viewModel: MainViewModel = viewModel()
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
             val context = LocalContext.current
             
+            DisposableEffect(Unit) {
+                val filter = IntentFilter(Intent.ACTION_HEADSET_PLUG)
+                registerReceiver(headsetReceiver, filter)
+                onDispose {
+                    unregisterReceiver(headsetReceiver)
+                }
+            }
+
             val darkTheme = when (themeMode) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
@@ -64,6 +90,7 @@ class MainActivity : ComponentActivity() {
             }
 
             LaunchedEffect(Unit) {
+                // Post-notification permission for Android 13+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     if (ContextCompat.checkSelfPermission(
                             context,
@@ -72,6 +99,11 @@ class MainActivity : ComponentActivity() {
                     ) {
                         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
+                }
+
+                // Check Accessibility Service
+                if (!checkIsAccessibilityServiceEnabled(context)) {
+                    viewModel.setPermissionDialogVisible(true)
                 }
             }
 

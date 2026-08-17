@@ -1,6 +1,9 @@
 package com.trishit.horizonic.widget
 
 import android.content.Context
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -131,10 +134,28 @@ class TogglePlayActionCallback : ActionCallback {
             SoundPlayer.stopPlaying()
             MotionState.isOverlayActive.value = false
         } else {
+            if (!isHeadsetConnected(context)) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.headphones_required_toast),
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
             SoundPlayer.startPlaying()
             MotionState.isOverlayActive.value = true
         }
 
         SoundReliefWidget().updateAll(context)
+    }
+
+    private fun isHeadsetConnected(context: Context): Boolean {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        return devices.any {
+            it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                    it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
+                    it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+        }
     }
 }

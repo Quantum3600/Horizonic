@@ -42,6 +42,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isHeadsetConnected = MutableStateFlow(false)
     val isHeadsetConnected: StateFlow<Boolean> = _isHeadsetConnected
 
+    private val _showPermissionDialog = MutableStateFlow(false)
+    val showPermissionDialog: StateFlow<Boolean> = _showPermissionDialog
+
     init {
         viewModelScope.launch {
             dataStoreManager.gyroSensitivity.collectLatest { MotionState.gyroSensitivity.value = it }
@@ -66,15 +69,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun toggleSession() {
+    fun toggleSession(onHeadsetMissing: () -> Unit = {}) {
         val currentlyActive = isSessionActive.value
         if (currentlyActive) {
             SoundPlayer.stopPlaying()
             MotionState.isOverlayActive.value = false
         } else {
+            if (!_isHeadsetConnected.value) {
+                onHeadsetMissing()
+                return
+            }
             SoundPlayer.startPlaying()
             MotionState.isOverlayActive.value = true
         }
+    }
+
+    fun setHeadsetConnected(connected: Boolean) {
+        _isHeadsetConnected.value = connected
+    }
+
+    fun setPermissionDialogVisible(visible: Boolean) {
+        _showPermissionDialog.value = visible
     }
 
     fun setThemeMode(mode: com.trishit.horizonic.ThemeMode) {

@@ -45,6 +45,10 @@
     <string name="vestibular_harmony_desc">Motion sickness is triggered by \'vestibular-ocular mismatch\' — your inner ear senses speed while your eyes index static texts. Under-display physics particles map vehicular forces in real-time, correcting your eye\'s visual drift. Paired with a calming 100Hz frequency cycle, the brain resolves conflict swiftly.</string>
     <string name="playback_duration_picker_title">Playback duration (seconds)</string>
     <string name="ok">OK</string>
+    <string name="headphones_required_toast">Please connect headphones for sound relief.</string>
+    <string name="accessibility_permission_title">Visual Overlay Required</string>
+    <string name="accessibility_permission_msg">Horizonic uses an Accessibility Service to show stabilizing particles over other apps. This is essential for effective motion sickness relief.</string>
+    <string name="not_now">Not Now</string>
 
     <!-- Services & Notifications -->
     <string name="motion_detected">Motion Detected</string>
