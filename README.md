@@ -1,5 +1,12 @@
 <p align="center">
-  <img src="https://github.com/Quantum3600/Horizonic/raw/master/app/src/main/ic_launcher-playstore.png" alt="Horizonic icon" width="140" />
+  <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Horizonic icon">
+    <defs>
+      <clipPath id="r">
+        <rect x="0" y="0" width="140" height="140" rx="16" ry="16" />
+      </clipPath>
+    </defs>
+    <image href="https://github.com/Quantum3600/Horizonic/raw/master/app/src/main/ic_launcher-playstore.png" width="140" height="140" clip-path="url(#r)" preserveAspectRatio="xMidYMid slice" />
+  </svg>
 </p>
 
 <h1 align="center">🌊 Horizonic</h1>
