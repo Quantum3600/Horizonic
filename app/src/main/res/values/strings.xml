@@ -3,7 +3,7 @@
     <string name="accessibility_service_description">Overlays motion-synchronized particles on top of the screen using the gyroscope, acting as a physical visual stabilizer to alleviate sensory-conflict mismatch.</string>
 
     <!-- Main Screen -->
-    <string name="begin">begin</string>
+    <string name="begin">Tap here to start</string>
     <string name="settings_content_description">Settings</string>
     <string name="horizonic_title">Horizonic</string>
 

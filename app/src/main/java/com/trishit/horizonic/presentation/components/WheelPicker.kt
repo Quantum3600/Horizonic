@@ -39,8 +39,8 @@ fun WheelPicker(
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = startIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
-    val itemHeight = 60.dp
-    val visibleItems = 5 // More items visible for better context
+    val itemHeight = 40.dp
+    val visibleItems = 3 // More items visible for better context
     val totalHeight = itemHeight * visibleItems
 
     LaunchedEffect(listState) {

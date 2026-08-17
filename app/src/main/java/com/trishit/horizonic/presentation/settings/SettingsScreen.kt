@@ -25,25 +25,35 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetState
@@ -72,7 +82,7 @@ import com.trishit.horizonic.presentation.main.MainViewModel
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     viewModel: MainViewModel,
@@ -190,202 +200,223 @@ fun SettingsScreen(
 
             // 0. Appearance Group
             SettingsGroup(title = stringResource(R.string.appearance)) {
-                Text(stringResource(R.string.theme), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ThemeMode.entries.forEach { mode ->
-                        val isSelected = themeMode == mode
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(40.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { viewModel.setThemeMode(mode) },
-                            contentAlignment = Alignment.Center
-                        ) {
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(0, 1),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
                             Text(
-                                text = mode.name.lowercase().replaceFirstChar { it.uppercase() },
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 13.sp
+                                text = stringResource(R.string.theme),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                            ) {
+                                ThemeMode.entries.forEachIndexed { index, mode ->
+                                    val isSelected = themeMode == mode
+                                    ToggleButton(
+                                        checked = isSelected,
+                                        onCheckedChange = { viewModel.setThemeMode(mode) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp),
+                                        shapes = when (index) {
+                                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                            1 -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                            2 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                        }
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            val themeIcon = when (mode) {
+                                                ThemeMode.SYSTEM -> Icons.Default.Smartphone
+                                                ThemeMode.LIGHT -> Icons.Default.LightMode
+                                                ThemeMode.DARK -> Icons.Default.DarkMode
+                                            }
+                                            Icon(
+                                                imageVector = themeIcon,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(Modifier.width(ToggleButtonDefaults.IconSpacing))
+                                            Text(
+                                                text = mode.name.lowercase()
+                                                    .replaceFirstChar { it.uppercase() },
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                )
             }
 
             // 1. Playback Group
             SettingsGroup(title = stringResource(R.string.playback)) {
                 // Playback Duration
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDurationSheet = true }
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(stringResource(R.string.duration_seconds), color = MaterialTheme.colorScheme.onSurface)
-                    Text(
-                        text = if (playDuration == -1) "∞" else "$playDuration s",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-
-                // Headphones Status
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(stringResource(R.string.check_for_headphones), color = MaterialTheme.colorScheme.onSurface)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (isHeadsetConnected) Icons.Default.CheckCircle else Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = if (isHeadsetConnected) Color(0xFF00FFCC) else MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(0, 3),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    onClick = { showDurationSheet = true },
+                    content = {
+                        Text(stringResource(R.string.duration_seconds))
+                    },
+                    trailingContent = {
                         Text(
-                            text = if (isHeadsetConnected) stringResource(R.string.connected) else stringResource(R.string.required),
-                            color = if (isHeadsetConnected) Color(0xFF00FFCC) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            fontSize = 14.sp
+                            text = if (playDuration == -1) "∞" else "$playDuration s",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                }
+                )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                // Headphones Status
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(1, 3),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Text(stringResource(R.string.check_for_headphones))
+                    },
+                    trailingContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isHeadsetConnected) Icons.Default.CheckCircle else Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = if (isHeadsetConnected) Color(0xFF00FFCC) else MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (isHeadsetConnected) stringResource(R.string.connected) else stringResource(R.string.required),
+                                color = if (isHeadsetConnected) Color(0xFF00FFCC) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                )
 
                 // Notifications
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(stringResource(R.string.status_notification), color = MaterialTheme.colorScheme.onSurface)
-                    Switch(
-                        checked = isNotificationEnabled,
-                        onCheckedChange = { isNotificationEnabled = it },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(2, 3),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Text(stringResource(R.string.status_notification))
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = isNotificationEnabled,
+                            onCheckedChange = { isNotificationEnabled = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
                         )
-                    )
-                }
+                    }
+                )
             }
 
             // 2. Motion & Permissions Group
             SettingsGroup(title = stringResource(R.string.motion_and_service)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.auto_detect_motion), color = MaterialTheme.colorScheme.onSurface)
-                        Text(
-                            stringResource(R.string.auto_detect_desc),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            fontSize = 12.sp
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(0, 3),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Text(stringResource(R.string.auto_detect_motion))
+                            Text(
+                                stringResource(R.string.auto_detect_desc),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = isAutoDetectEnabled,
+                            onCheckedChange = { viewModel.toggleAutoDetect(context) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
                         )
                     }
-                    Switch(
-                        checked = isAutoDetectEnabled,
-                        onCheckedChange = { viewModel.toggleAutoDetect(context) },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                }
+                )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.accessibility_service), color = MaterialTheme.colorScheme.onSurface)
-                        Text(
-                            text = if (isServiceRunning) stringResource(R.string.running) else stringResource(R.string.stopped),
-                            color = if (isServiceRunning) Color(0xFF00FFCC) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            fontSize = 12.sp
-                        )
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(1, 3),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Text(stringResource(R.string.accessibility_service))
+                            Text(
+                                text = if (isServiceRunning) stringResource(R.string.running) else stringResource(R.string.stopped),
+                                color = if (isServiceRunning) Color(0xFF00FFCC) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        Button(
+                            onClick = {
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                context.startActivity(intent)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(stringResource(R.string.setup), fontSize = 12.sp)
+                        }
                     }
-                    Button(
-                        onClick = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            context.startActivity(intent)
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Text(stringResource(R.string.setup), fontSize = 12.sp)
-                    }
-                }
+                )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 8.dp))
-
-                Button(
-                    onClick = { requestBatteryExemption(context) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.battery_optimization_settings), fontSize = 14.sp)
-                }
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(2, 3),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Text(stringResource(R.string.battery_optimization_settings))
+                    },
+                    leadingContent = {
+                        Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
+                    },
+                    onClick = { requestBatteryExemption(context) }
+                )
             }
 
             // 3. Visual Motion Cues Group
+            val visualSegmentsCount = if (isServiceRunning) 5 else 7
+            var visualIndex = 0
             SettingsGroup(title = stringResource(R.string.visual_motion_cues)) {
-                Text(
-                    text = stringResource(R.string.visual_motion_cues_desc),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Text(
+                            text = stringResource(R.string.visual_motion_cues_desc),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
                 )
 
                 if (!isServiceRunning) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.errorContainer)
-                            .padding(16.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.Top) {
-                            Icon(
-                                Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
+                    SegmentedListItem(
+                        shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                        content = {
                             Column {
                                 Text(
                                     stringResource(R.string.setup_required),
@@ -399,215 +430,268 @@ fun SettingsScreen(
                                     fontSize = 13.sp
                                 )
                             }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            stringResource(R.string.how_to_enable_overlay),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        val steps = listOf(
-                            stringResource(R.string.step_1),
-                            stringResource(R.string.step_2),
-                            stringResource(R.string.step_3)
-                        )
-                        steps.forEach { step ->
-                            Text(
-                                text = step,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                fontSize = 13.sp,
-                                modifier = Modifier.padding(vertical = 2.dp)
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
                             )
-                        }
+                        },
+                        colors = ListItemDefaults.segmentedColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    )
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = {
-                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    SegmentedListItem(
+                        shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                        colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                        content = {
+                            Column {
+                                Text(
+                                    stringResource(R.string.how_to_enable_overlay),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                val steps = listOf(
+                                    stringResource(R.string.step_1),
+                                    stringResource(R.string.step_2),
+                                    stringResource(R.string.step_3)
+                                )
+                                steps.forEach { step ->
+                                    Text(
+                                        text = step,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.padding(vertical = 2.dp)
+                                    )
                                 }
-                                context.startActivity(intent)
-                            },
-                            modifier = Modifier.fillMaxWidth().height(48.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            shape = RoundedCornerShape(24.dp)
-                        ) {
-                            Text(stringResource(R.string.enable_overlay), fontWeight = FontWeight.Bold)
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = {
+                                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        }
+                                        context.startActivity(intent)
+                                    },
+                                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    shape = RoundedCornerShape(24.dp)
+                                ) {
+                                    Text(stringResource(R.string.enable_overlay), fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
-                    }
-                    
-                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 16.dp))
+                    )
                 }
 
                 // Sensitivity
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(stringResource(R.string.motion_sensitivity), color = MaterialTheme.colorScheme.onSurface)
-                        Text(text = String.format("%.1f", gyroSensitivity), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(stringResource(R.string.motion_sensitivity))
+                                Text(text = String.format("%.1f", gyroSensitivity), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
+                            }
+                            Slider(
+                                value = gyroSensitivity,
+                                onValueChange = { viewModel.setGyroSensitivity(it) },
+                                valueRange = 0.5f..10.0f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary,
+                                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        }
                     }
-                    Slider(
-                        value = gyroSensitivity,
-                        onValueChange = { viewModel.setGyroSensitivity(it) },
-                        valueRange = 0.5f..10.0f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 8.dp))
+                )
 
                 // Dot Size
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(stringResource(R.string.dot_size), color = MaterialTheme.colorScheme.onSurface)
-                        Text(text = "${particleSize.toInt()} px", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(stringResource(R.string.dot_size))
+                                Text(text = "${particleSize.toInt()} px", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
+                            }
+                            Slider(
+                                value = particleSize,
+                                onValueChange = { viewModel.setParticleSize(it) },
+                                valueRange = 2f..20f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary,
+                                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        }
                     }
-                    Slider(
-                        value = particleSize,
-                        onValueChange = { viewModel.setParticleSize(it) },
-                        valueRange = 2f..20f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 8.dp))
+                )
 
                 // Dots Per Side
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(stringResource(R.string.dots_per_side), color = MaterialTheme.colorScheme.onSurface)
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        (3..5).forEach { count ->
-                            val isSelected = baseParticlesPerSide == count
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                                    .clickable { viewModel.setBaseParticlesPerSide(count) },
-                                contentAlignment = Alignment.Center
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.dots_per_side),
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
                             ) {
-                                Text(
-                                    text = count.toString(),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                (3..5).forEachIndexed { index, count ->
+                                    val isSelected = baseParticlesPerSide == count
+                                    ToggleButton(
+                                        checked = isSelected,
+                                        onCheckedChange = { viewModel.setBaseParticlesPerSide(count) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp),
+                                        shapes = when (index) {
+                                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                            1 -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                            2 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                        }
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = count.toString(),
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 8.dp))
+                )
 
                 // Color Theme
-                Column {
-                    Text(stringResource(R.string.color_theme), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                    val themes = listOf("Calming Turquoise", "Deep Ocean", "Soft Lavender", "Sunset Amber")
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        themes.forEach { theme ->
-                            val isSelected = particleColorTheme == theme
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(36.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant)
-                                    .clickable { viewModel.setParticleColorTheme(theme) }
-                                    .padding(4.dp),
-                                contentAlignment = Alignment.Center
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(visualIndex++, visualSegmentsCount),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Text(stringResource(R.string.color_theme), modifier = Modifier.padding(bottom = 12.dp))
+                            val themes = listOf("Calming Turquoise", "Deep Ocean", "Soft Lavender", "Sunset Amber")
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
                             ) {
-                                Text(
-                                    text = theme.split(" ").last(),
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
+                                themes.forEachIndexed { index, theme ->
+                                    val isSelected = particleColorTheme == theme
+                                    ToggleButton(
+                                        checked = isSelected,
+                                        onCheckedChange = { viewModel.setParticleColorTheme(theme) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp),
+                                        shapes = when (index) {
+                                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                            1 -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                            2 -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                            3 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                        }
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = theme.split(" ").last(),
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                )
             }
 
             // 4. Info/Background Text
             SettingsGroup(title = stringResource(R.string.background)) {
-                Text(
-                    text = stringResource(R.string.background_desc),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
-            }
-
-            // 5. Vestibular Harmony
-            SettingsGroup(title = stringResource(R.string.vestibular_harmony)) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(
-                        Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(0, 1),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
                         Text(
-                            stringResource(R.string.vestibular_harmony),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.vestibular_harmony_desc),
+                            text = stringResource(R.string.background_desc),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 13.sp,
                             lineHeight = 18.sp
                         )
                     }
-                }
+                )
+            }
+
+            // 5. Vestibular Harmony
+            SettingsGroup(title = stringResource(R.string.vestibular_harmony)) {
+                SegmentedListItem(
+                    shapes = ListItemDefaults.segmentedShapes(0, 1),
+                    colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    content = {
+                        Column {
+                            Text(
+                                stringResource(R.string.vestibular_harmony),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.vestibular_harmony_desc),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    },
+                    leadingContent = {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                )
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -618,15 +702,10 @@ fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(start = 8.dp)
         )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                .padding(16.dp)
-        ) {
-            Column(content = content)
-        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
+            content = content
+        )
     }
 }
 

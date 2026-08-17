@@ -6,10 +6,55 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontVariation
 import com.trishit.horizonic.R
 
 val Parkinsans = FontFamily(
-    Font(R.font.parkinsans)
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.Thin,
+        variationSettings = FontVariation.Settings(FontVariation.weight(100))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.ExtraLight,
+        variationSettings = FontVariation.Settings(FontVariation.weight(200))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.Light,
+        variationSettings = FontVariation.Settings(FontVariation.weight(300))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(FontVariation.weight(400))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(FontVariation.weight(500))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(600))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(700))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.ExtraBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(800))
+    ),
+    Font(
+        resId = R.font.parkinsans,
+        weight = FontWeight.Black,
+        variationSettings = FontVariation.Settings(FontVariation.weight(900))
+    )
 )
 
 // Set of Material typography styles to start with
