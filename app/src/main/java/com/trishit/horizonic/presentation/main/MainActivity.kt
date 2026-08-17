@@ -14,6 +14,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -26,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.trishit.horizonic.MotionState
@@ -38,7 +41,7 @@ import com.trishit.horizonic.utils.updateSoundGlanceWidgets
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-sealed interface Route {
+sealed interface Route : NavKey {
     data object Main : Route
     data object Settings : Route
 }
@@ -124,29 +127,44 @@ class MainActivity : ComponentActivity() {
                     backStack = backStack,
                     onBack = { backStack.removeLastOrNull() },
                     transitionSpec = {
-                        slideInHorizontally(initialOffsetX = { it }) togetherWith
-                            slideOutHorizontally(targetOffsetX = { -it })
+                        slideInHorizontally(
+                            initialOffsetX = { it },
+                            animationSpec = tween(500)
+                        ) togetherWith slideOutHorizontally(
+                            targetOffsetX = { -it },
+                            animationSpec = tween(500)
+                        )
                     },
                     popTransitionSpec = {
-                        slideInHorizontally(initialOffsetX = { -it }) togetherWith
-                            slideOutHorizontally(targetOffsetX = { it })
+                        slideInHorizontally(
+                            initialOffsetX = { -it },
+                            animationSpec = tween(500)
+                        ) togetherWith slideOutHorizontally(
+                            targetOffsetX = { it },
+                            animationSpec = tween(500)
+                        )
                     },
                     predictivePopTransitionSpec = {
-                        slideInHorizontally(initialOffsetX = { -it }) togetherWith
-                            slideOutHorizontally(targetOffsetX = { it })
+                        slideInHorizontally(
+                            initialOffsetX = { -it },
+                            animationSpec = tween(500)
+                        ) togetherWith slideOutHorizontally(
+                            targetOffsetX = { it },
+                            animationSpec = tween(500)
+                        )
                     },
                     entryProvider = { key ->
                         when (key) {
                             Route.Main -> NavEntry(key) {
                                 MainScreen(
                                     viewModel = viewModel,
-                                    onNavigateToSettings = { backStack.add(Route.Settings) }
+                                    onNavigateToSettings = dropUnlessResumed { backStack.add(Route.Settings) }
                                 )
                             }
                             Route.Settings -> NavEntry(key) {
                                 SettingsScreen(
                                     viewModel = viewModel,
-                                    onNavigateBack = { backStack.removeLastOrNull() }
+                                    onNavigateBack = dropUnlessResumed { backStack.removeLastOrNull() }
                                 )
                             }
                         }

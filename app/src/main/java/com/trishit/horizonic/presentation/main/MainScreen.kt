@@ -46,7 +46,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.trishit.horizonic.R
 import com.trishit.horizonic.utils.openAccessibilitySettings
 import androidx.compose.ui.tooling.preview.Preview
@@ -104,13 +107,16 @@ fun MainScreenContent(
     )
 
     var timePhase by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(Unit) {
-        var lastTimeMillis = withFrameMillis { it }
-        while (true) {
-            withFrameMillis { frameTimeMillis ->
-                val deltaTime = (frameTimeMillis - lastTimeMillis) / 1000f
-                timePhase += deltaTime * targetSpeedFactor
-                lastTimeMillis = frameTimeMillis
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            var lastTimeMillis = withFrameMillis { it }
+            while (true) {
+                withFrameMillis { frameTimeMillis ->
+                    val deltaTime = (frameTimeMillis - lastTimeMillis) / 1000f
+                    timePhase += deltaTime * targetSpeedFactor
+                    lastTimeMillis = frameTimeMillis
+                }
             }
         }
     }
